@@ -1,0 +1,70 @@
+# Python environments and caches
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/*.py[cod]
+.coverage
+coverage/
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+# Local secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.kdbx
+.netrc
+credentials.json
+service-account*.json
+# Local runtime data and checkpoints
+/logs/
+后端/data/
+*.sqlite
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+*.db
+*.db-shm
+*.db-wal
+*.sql
+*.sql.*
+*.sql.gz
+*.sql.zip
+*.dump
+*.bak
+*.backup
+*.zip
+*.7z
+*.rar
+*.tar
+*.tgz
+*.gz
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+~$*
+/backups/
+**/uploads/
+**/uploaded_files/
+**/storage/
+**/downloads/
+**/test-results/
+**/playwright-report/
+# Local historical acceptance notes contain real run identifiers and backup paths.
+/后端/M2-10_WRITING.md
+# Local project charter contains personal document author metadata.
+/PaperAgent 项目立项书.docx
+# Frontend dependencies and build output
+**/node_modules/
+**/dist/
+# Local IDE settings
+.idea/
+**/.idea/
+.vscode/

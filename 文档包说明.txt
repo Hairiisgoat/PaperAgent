@@ -1,0 +1,20 @@
+PaperAgent 项目文档包
+生成日期：2026年11月2日
+版本：V0.1（初稿，待项目负责人评审）
+
+文件清单：
+01_PaperAgent_需求规格说明书.docx
+02_PaperAgent_技术选型方案.docx
+03_PaperAgent_系统架构设计说明书.docx
+04_PaperAgent_数据库设计初稿.docx
+05_PaperAgent_开发任务拆分.docx
+
+重要说明：
+1. 需求规格说明书依据本轮已确认的 R-001 至 R-031 决策整理。
+2. 技术选型、架构和数据库文档中，已确认方向与待评审建议已明确区分。
+3. PostgreSQL、SQLAlchemy、pgvector/Chroma、UI 组件库、编辑器、搜索供应商、PDF 转换方案尚未由项目负责人最终拍板。
+4. 本文档包是设计初稿，不代表所有功能都必须在 V1.0 一次性交付。
+5. V1.0 优先完成课程论文垂直切片和核心业务闭环。
+
+建议保存目录：F:\paper-agent
+使用方式：下载本 ZIP 后，解压到 F:\paper-agent 即可。

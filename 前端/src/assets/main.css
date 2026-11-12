@@ -1,0 +1,5 @@
+:root { font-family: Inter, "Microsoft YaHei", system-ui, sans-serif; color: #1d3443; background: #f5f7f9; font-synthesis: none; text-rendering: optimizeLegibility; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+button, input { font: inherit; }
+button:focus-visible, a:focus-visible { outline: 3px solid #79a9c0; outline-offset: 3px; }
