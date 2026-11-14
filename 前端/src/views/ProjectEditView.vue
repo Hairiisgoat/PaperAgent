@@ -109,7 +109,10 @@ onBeforeUnmount(() => { sequence++; store.cancelDetail(); window.removeEventList
 <template>
   <section class="edit-page" aria-labelledby="edit-title">
     <RouterLink class="back-link" :to="{ name: 'project-detail', params: { projectId } }"><ArrowLeft aria-hidden="true" /> 返回项目详情</RouterLink>
-    <div class="intro"><p class="eyebrow">WORKSPACE / EDIT PROJECT</p><h1 id="edit-title">编辑项目信息</h1><p>更新论文的基本信息。</p></div>
+    <header class="intro">
+      <h1 id="edit-title">编辑项目信息</h1>
+      <p>更新论文的基本信息。</p>
+    </header>
     <div v-if="!initialized && store.detailLoading" class="card state" role="status">正在加载项目…</div>
     <div v-else-if="!initialized && !store.currentProject" class="card state" role="alert"><p>{{ store.detailError?.status === 404 ? '项目不存在或已删除' : store.detailError?.status === 422 ? '项目地址无效' : store.detailError?.status === 503 ? '服务暂时不可用，请稍后重试。' : '无法加载项目，请检查网络或后端服务。' }}</p><ElButton v-if="store.detailError?.status !== 404" @click="initialize(projectId)">重试</ElButton></div>
     <form v-else class="card" novalidate @submit.prevent="submit">
@@ -125,8 +128,231 @@ onBeforeUnmount(() => { sequence++; store.cancelDetail(); window.removeEventList
 </template>
 
 <style scoped>
-.edit-page { max-width: 850px; margin: 0 auto; }.back-link { display: inline-flex; align-items: center; gap: 7px; margin-bottom: 30px; color: #537689; font-size: 13px; text-decoration: none; }.back-link svg { width: 15px; height: 15px; }
-.eyebrow { margin: 0 0 12px; color: #6c8c9b; font-size: 10px; font-weight: 700; letter-spacing: .16em; }h1 { margin: 0; font-size: 30px; color: #173247; }.intro > p:last-child { margin: 12px 0 28px; color: #718391; font-size: 14px; }
-.card { padding: 30px 34px; background: #fff; border: 1px solid #e1e8ed; border-radius: 12px; }.state { min-height: 200px; text-align: center; color: #617985; }.card-head { display: flex; align-items: center; gap: 13px; padding-bottom: 25px; margin-bottom: 25px; border-bottom: 1px solid #edf1f4; }.icon-box { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 10px; background: #edf5f8; color: #53849a; }.icon-box svg { width: 21px; height: 21px; }h2 { margin: 0; color: #263f4d; font-size: 16px; }.card-head p { margin: 6px 0 0; color: #83939e; font-size: 12px; }
-.field { margin-bottom: 24px; }.field label { display: block; margin-bottom: 9px; color: #324d5d; font-weight: 600; font-size: 13px; }.field label span { color: #b64747; }.field input, .field textarea { display: block; width: 100%; border: 1px solid #d8e2e8; border-radius: 7px; padding: 11px 12px; color: #233e4f; background: #fff; font: inherit; font-size: 14px; }.field textarea { resize: vertical; min-height: 110px; }.field input[readonly], .field textarea[readonly] { background: #f5f7f9; color: #617985; }.field input[aria-invalid="true"], .field textarea[aria-invalid="true"] { border-color: #bc5555; }.field-error { margin: 7px 0 0; color: #ad3939; font-size: 12px; }.alert { margin-bottom: 22px; padding: 12px 14px; border: 1px solid #f1d7ca; border-radius: 7px; color: #8d4c32; background: #fff7f1; font-size: 13px; line-height: 1.6; }.link-button { border: 0; background: transparent; color: #245b78; text-decoration: underline; cursor: pointer; }.actions { display: flex; justify-content: flex-end; gap: 6px; padding-top: 24px; border-top: 1px solid #edf1f4; }@media (max-width: 640px) { .card { padding: 24px 18px; } h1 { font-size: 25px; } }
+.edit-page {
+  max-width: 760px;
+  margin: 0 auto;
+  color: var(--pa-text-body);
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding: 4px 8px 4px 4px;
+  margin-left: -4px;
+  border-radius: var(--pa-radius-control);
+  color: var(--pa-text-meta);
+  font-size: 13px;
+  text-decoration: none;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.back-link:hover {
+  color: var(--el-color-primary);
+  background: var(--pa-bg-hover);
+}
+
+.back-link svg {
+  width: 14px;
+  height: 14px;
+}
+
+.intro {
+  margin-bottom: 20px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--pa-color-heading);
+  letter-spacing: -0.02em;
+}
+
+.intro p {
+  margin: 4px 0 0;
+  color: var(--pa-text-meta);
+  font-size: 13px;
+}
+
+.card {
+  padding: var(--pa-space-card);
+  background: var(--pa-bg-surface);
+  border: var(--pa-border);
+  border-radius: var(--pa-radius-card);
+  box-shadow: var(--pa-shadow-card);
+}
+
+.state {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  color: var(--pa-text-meta);
+  font-size: 13px;
+}
+
+.state p {
+  margin: 0;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  border-bottom: var(--pa-border);
+}
+
+.icon-box {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+  background: var(--el-color-primary-light-9);
+  border: 1px solid var(--el-color-primary-light-8);
+  color: var(--el-color-primary);
+  flex: none;
+}
+
+.icon-box svg {
+  width: 17px;
+  height: 17px;
+}
+
+h2 {
+  margin: 0;
+  color: var(--pa-color-heading);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.card-head p {
+  margin: 3px 0 0;
+  color: var(--pa-text-meta);
+  font-size: 12px;
+}
+
+.field {
+  margin-bottom: 18px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--pa-color-heading);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.field label span {
+  color: var(--pa-color-danger-strong);
+}
+
+.field input,
+.field textarea {
+  display: block;
+  width: 100%;
+  border: var(--pa-border);
+  border-radius: var(--pa-radius-control);
+  padding: 8px 12px;
+  color: var(--pa-color-heading);
+  background: var(--pa-bg-surface);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.field input:hover:not([readonly]),
+.field textarea:hover:not([readonly]) {
+  border-color: var(--el-border-color-dark);
+}
+
+.field input:focus-visible,
+.field textarea:focus-visible {
+  outline: none;
+  border-color: var(--el-color-primary);
+  box-shadow: var(--pa-ring-primary);
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 108px;
+  line-height: 1.65;
+}
+
+.field input[readonly],
+.field textarea[readonly] {
+  background: var(--pa-bg-inset);
+  color: var(--pa-text-meta);
+  cursor: default;
+}
+
+.field input[aria-invalid="true"],
+.field textarea[aria-invalid="true"] {
+  border-color: var(--pa-color-danger-strong);
+}
+
+.field-error {
+  margin: 5px 0 0;
+  color: var(--pa-color-danger);
+  font-size: 12px;
+}
+
+.alert {
+  margin-bottom: 18px;
+  padding: 10px 14px;
+  border: 1px solid var(--pa-border-amber);
+  border-left: 3px solid var(--pa-color-amber-strong);
+  border-radius: var(--pa-radius-control);
+  color: var(--pa-color-amber);
+  background: var(--pa-bg-amber);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.link-button {
+  margin-left: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--el-color-primary);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 18px;
+  border-top: var(--pa-border);
+}
+
+.actions :deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+
+.edit-page :deep(.el-button) {
+  border-radius: var(--pa-radius-control);
+  font-weight: 500;
+  height: 32px;
+  padding: 0 16px;
+}
+
+.edit-page :deep(.el-button:focus-visible) {
+  outline: none;
+  box-shadow: var(--pa-ring-primary);
+}
+
+@media (max-width: 640px) {
+  .card { padding: 18px 16px; }
+}
 </style>

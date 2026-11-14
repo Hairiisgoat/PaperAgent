@@ -1,5 +1,6 @@
-:root { font-family: Inter, "Microsoft YaHei", system-ui, sans-serif; color: #1d3443; background: #f5f7f9; font-synthesis: none; text-rendering: optimizeLegibility; }
+/* 基础 Reset。颜色 / 字体 / 圆角等设计 token 统一由 styles/theme.css 提供 */
+:root { font-synthesis: none; text-rendering: optimizeLegibility; }
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; }
-button, input { font: inherit; }
-button:focus-visible, a:focus-visible { outline: 3px solid #79a9c0; outline-offset: 3px; }
+button, input, select, textarea { font: inherit; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--el-color-primary-light-5, #92b1f5); outline-offset: 2px; }

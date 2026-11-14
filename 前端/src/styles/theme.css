@@ -1,0 +1,192 @@
+/* ==========================================================================
+   PaperAgent Design System · Phase 1 (Global Tokens)
+   风格定位：现代学术科研工作台极简风（Linear / Notion 式干净纸张感）
+
+   加载顺序（见 main.ts）：
+     element-plus/theme-chalk/base.css  →  assets/main.css  →  styles/theme.css
+   本文件必须最后加载，才能以同等优先级覆盖 Element Plus 的 :root 变量。
+   ========================================================================== */
+
+:root {
+  /* ---------- 品牌色：深靛蓝（替换 EP 默认 #409EFF） ---------- */
+  --pa-color-brand: #2563eb;
+  --pa-color-ink: #1e293b;            /* 石墨深蓝：标题 / 主文字 */
+
+  /* EP 的 light/dark 梯度在 base.css 中是预计算的静态值，必须逐级显式覆盖 */
+  --el-color-primary: #2563eb;
+  --el-color-primary-light-3: #6692f1; /* mix(white, 30%) */
+  --el-color-primary-light-5: #92b1f5; /* mix(white, 50%) */
+  --el-color-primary-light-7: #bed0f9; /* mix(white, 70%) */
+  --el-color-primary-light-8: #d3e0fb; /* mix(white, 80%) */
+  --el-color-primary-light-9: #e9effd; /* mix(white, 90%) */
+  --el-color-primary-dark-2: #1e4fbc;  /* mix(black, 20%) */
+
+  /* ---------- 表面与层级：微暖浅灰页面 + 纯白卡片 ---------- */
+  --pa-bg-page: #f8fafc;
+  --pa-bg-surface: #ffffff;
+  --el-bg-color-page: #f8fafc;
+  --el-bg-color: #ffffff;
+  --el-bg-color-overlay: #ffffff;
+
+  /* ---------- 文字（Slate 灰阶） ---------- */
+  --el-text-color-primary: #1e293b;
+  --el-text-color-regular: #334155;
+  --el-text-color-secondary: #64748b;
+  --el-text-color-placeholder: #94a3b8;
+  --el-text-color-disabled: #b4becb;
+
+  /* ---------- 边框：全站统一 1px solid #E2E8F0 ---------- */
+  --pa-border-color: #e2e8f0;
+  --pa-border: 1px solid #e2e8f0;
+  --el-border-color: #e2e8f0;
+  --el-border-color-light: #e2e8f0;
+  --el-border-color-lighter: #e2e8f0;
+  --el-border-color-extra-light: #f1f5f9;
+  --el-border-color-dark: #cbd5e1;
+  --el-border-color-darker: #94a3b8;
+  --el-border-width: 1px;
+  --el-border-style: solid;
+  --el-border: 1px solid #e2e8f0;
+
+  /* ---------- 填充色 ---------- */
+  --el-fill-color: #f1f5f9;
+  --el-fill-color-light: #f8fafc;
+  --el-fill-color-lighter: #fafbfc;
+  --el-fill-color-extra-light: #fcfdfe;
+  --el-fill-color-dark: #e2e8f0;
+  --el-fill-color-darker: #cbd5e1;
+  --el-fill-color-blank: #ffffff;
+
+  /* ---------- 圆角：卡片 8px / 按钮与输入框 6px ---------- */
+  --pa-radius-card: 8px;
+  --pa-radius-control: 6px;
+  --el-border-radius-base: 6px;        /* Button / Input / Select 等控件 */
+  --el-border-radius-small: 4px;
+  --el-border-radius-round: 20px;
+  --el-border-radius-circle: 100%;
+
+  /* ---------- 阴影：弱化，仅保留轻微层次 ---------- */
+  --el-box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  --el-box-shadow-light: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --el-box-shadow-lighter: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --el-box-shadow-dark: 0 8px 24px rgba(15, 23, 42, 0.08);
+
+  /* ---------- 排版 ---------- */
+  --pa-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC",
+    "Source Han Sans SC", Roboto, "Helvetica Neue", Arial, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji";
+  --pa-font-mono: ui-monospace, SFMono-Regular, "JetBrains Mono", "Cascadia Code",
+    "Cascadia Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+  --pa-line-height-prose: 1.7;         /* 摘要 / 论文段落 */
+  --pa-line-height-ui: 1.5;            /* 常规界面文字 */
+  --el-font-family: var(--pa-font-sans);
+  --el-font-size-base: 14px;
+
+  /* ---------- Phase 2：工作台语义 token ---------- */
+  --pa-color-heading: #0f172a;         /* 标题深墨色 */
+  --pa-text-body: #334155;             /* 正文 */
+  --pa-text-meta: #64748b;             /* 辅助元数据（雾霾灰） */
+  --pa-text-faint: #94a3b8;            /* 未开始 / 占位 */
+  --pa-bg-canvas: #f4f6f9;             /* 工作区底层画布 */
+  --pa-bg-sidebar: #f8fafc;            /* 极简浅色侧边栏 */
+  --pa-bg-nav-active: #eef2ff;         /* 侧栏胶囊激活底色 */
+  --pa-bg-inset: #f8fafc;              /* 卡片内嵌区块 */
+  --pa-bg-hover: #f1f5f9;
+  --pa-shadow-card: 0 1px 3px rgba(15, 23, 42, 0.04);
+  --pa-shadow-float: 0 12px 32px rgba(15, 23, 42, 0.12);
+  --pa-ring-primary: 0 0 0 3px rgba(37, 99, 235, 0.14);
+  --pa-ring-amber: 0 0 0 3px rgba(217, 119, 6, 0.14);
+  --pa-space-card: 24px;
+  --pa-space-block: 16px;
+  --pa-color-amber: #b45309;
+  --pa-color-amber-strong: #d97706;
+  --pa-bg-amber: #fffbeb;
+  --pa-border-amber: #fde68a;
+  --pa-color-success: #047857;
+  --pa-color-success-dot: #10b981;
+  --pa-bg-success: #ecfdf5;
+  --pa-border-success: #a7f3d0;
+  --pa-color-danger: #b91c1c;
+  --pa-color-danger-strong: #dc2626;
+  --pa-bg-danger: #fef2f2;
+  --pa-border-danger: #fecaca;
+  --pa-backdrop: rgba(15, 23, 42, 0.42);
+  --pa-bar-bg: rgba(244, 246, 249, 0.86);
+
+  font-family: var(--pa-font-sans);
+  color: var(--el-text-color-primary);
+  background: var(--pa-bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---------- 基础排版 ---------- */
+html, body, #app {
+  min-height: 100vh;
+}
+
+body {
+  background: var(--pa-bg-page);
+  color: var(--el-text-color-primary);
+  font-family: var(--pa-font-sans);
+  line-height: var(--pa-line-height-ui);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--pa-color-ink);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+/* 长文本段落：提升阅读舒适度（组件内 scoped 样式仍可局部覆盖） */
+p, li, dd, blockquote {
+  line-height: var(--pa-line-height-prose);
+}
+
+/* 可复用的论文正文 / 摘要排版类 */
+.pa-prose {
+  font-size: 15px;
+  line-height: var(--pa-line-height-prose);
+  color: var(--el-text-color-regular);
+  max-width: 72ch;
+  overflow-wrap: anywhere;
+}
+
+.pa-prose p {
+  margin: 0 0 14px;
+  line-height: var(--pa-line-height-prose);
+}
+
+code, kbd, samp, pre {
+  font-family: var(--pa-font-mono);
+  font-size: 0.92em;
+}
+
+::selection {
+  background: var(--el-color-primary-light-8);
+  color: var(--pa-color-ink);
+}
+
+/* ---------- Element Plus 组件级 token 收敛 ---------- */
+.el-card {
+  --el-card-border-color: var(--pa-border-color);
+  --el-card-border-radius: var(--pa-radius-card);
+  --el-card-bg-color: var(--pa-bg-surface);
+}
+
+.el-dialog {
+  --el-dialog-border-radius: var(--pa-radius-card);
+  --el-dialog-box-shadow: var(--el-box-shadow-dark);
+}
+
+.el-message-box {
+  --el-messagebox-border-radius: var(--pa-radius-card);
+}
+
+.el-table {
+  --el-table-border-color: var(--pa-border-color);
+  --el-table-header-bg-color: var(--el-fill-color-light);
+  --el-table-header-text-color: var(--el-text-color-secondary);
+  --el-table-row-hover-bg-color: var(--el-fill-color-light);
+}

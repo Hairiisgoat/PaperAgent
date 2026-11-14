@@ -97,27 +97,123 @@ onBeforeUnmount(() => { mounted = false; controller.abort() })
 </script>
 
 <template>
-  <section class="approval card" aria-labelledby="approval-title">
-    <h2 id="approval-title">{{ label }}</h2>
-    <p v-if="detail && !detail.items && !detail.sources">当前为 Mock 审核数据，仅展示后端返回的 ID。</p>
-    <p v-else-if="detail?.items">请审核真实 Planner 生成的任务；批准后将使用所选任务标题及描述、预期产出的部分文字查询 Crossref。</p>
-    <p v-else-if="detail?.sources">以下是 Crossref 返回的候选文献，检索命中不代表相关性或研究结论已核实。批准后会调用模型生成初稿并可能产生费用；至少选择一条有摘要的资料。系统使用已批准资料的可用摘要，摘要过长时会停止并提示处理。</p>
-    <p v-if="loading" role="status">正在读取审核详情…</p>
-    <p v-if="error" class="problem" role="alert">{{ error }}</p>
-    <template v-if="detail">
-      <p>{{ detail.approval_type === 'task_approval' ? '请选择允许执行的任务。' : '请选择允许写作使用的资料。' }}</p>
-      <div class="selection"><button type="button" :disabled="locked || submitting" @click="selected = [...detail.item_ids]">全选</button><button type="button" :disabled="locked || submitting" @click="selected = []">取消选择</button><span>已选 {{ selected.length }} / {{ detail.item_ids.length }}</span></div>
-      <ul><li v-for="(id, index) in detail.item_ids" :key="id"><label><input v-model="selected" type="checkbox" :value="id" :disabled="locked || submitting"><span v-if="detail.items"><strong>{{ detail.items[index]?.title }}</strong><br>{{ detail.items[index]?.description }}<br>预期产出：{{ detail.items[index]?.expected_output }}<br>{{ id }}</span><span v-else-if="detail.sources"><strong>{{ detail.sources[index]?.title }}</strong><br><span v-if="detail.sources[index]?.relevance_hint">{{ relevanceText(detail.sources[index]?.relevance_hint) }}，请人工核验<br></span><span v-if="(detail.sources[index]?.same_title_count ?? 1) > 1">疑似同标题不同 DOI（{{ detail.sources[index]?.same_title_count }} 条），请核对版本<br></span>作者：{{ detail.sources[index]?.authors.join('、') || '暂无' }}；年份：{{ detail.sources[index]?.year || '暂无' }}；期刊：{{ detail.sources[index]?.journal || '暂无' }}<br>DOI：{{ detail.sources[index]?.doi }}<br>摘要：{{ detail.sources[index]?.abstract || '暂无' }}<br>关联任务：{{ detail.sources[index]?.tasks.map(t => t.title).join('；') }}<br><a :href="detail.sources[index]?.url" target="_blank" rel="noopener noreferrer" @click.stop>查看文献来源</a></span><span v-else>{{ id }}</span></label></li></ul>
-      <p v-if="locked" class="warning">审核决定待确认，选择已锁定。请先核对服务端状态，可重试相同决定。</p>
-      <div class="actions">
-        <ElButton v-if="!locked" type="primary" :loading="submitting" :disabled="!validSelection || submitting || confirming || (!!detail.sources && !detail.sources.some(source => selected.includes(source.source_id) && !!source.abstract && source.abstract.trim().length >= 8))" @click="submit({ decision: 'approve', approved_ids: [...selected], ...(detail.items ? { continue_research: true } : detail.sources ? { continue_writing: true, segmented_writing: true } : {}) })">{{ detail.items ? '批准并启动资料检索' : detail.sources ? '批准并生成初稿' : '批准所选' }}</ElButton>
-        <ElButton v-if="!locked" type="danger" plain :disabled="submitting || confirming" @click="reject">拒绝全部</ElButton>
-        <ElButton v-if="locked && pending" type="primary" :loading="submitting" :disabled="submitting || (pending.decision === 'approve' && !pending.approved_ids.every(id => detail?.item_ids.includes(id)))" @click="submit(pending)">重试相同决定</ElButton>
-      </div>
-    </template>
-    <div v-else-if="!loading" class="actions"><ElButton @click="load">重新读取审核详情</ElButton><ElButton v-if="locked && pending" type="primary" :loading="submitting" :disabled="submitting" @click="submit(pending)">重试相同决定</ElButton></div>
+  <section class="approval card" :class="detail?.approval_type === 'source_approval' ? 'is-source' : 'is-task'" aria-labelledby="approval-title">
+    <div class="gate-bar">
+      <span class="gate-dot" aria-hidden="true"></span>
+      <span class="gate-label">HUMAN REVIEW GATE</span>
+      <span v-if="detail" class="gate-meta">{{ detail.approval_type }} · {{ detail.checkpoint_id.slice(0, 8) }}</span>
+    </div>
+    <div class="approval-body">
+      <header class="approval-head">
+        <h2 id="approval-title">{{ label }}</h2>
+        <p v-if="detail && !detail.items && !detail.sources" class="lead">当前为 Mock 审核数据，仅展示后端返回的 ID。</p>
+        <p v-else-if="detail?.items" class="lead">请审核真实 Planner 生成的任务；批准后将使用所选任务标题及描述、预期产出的部分文字查询 Crossref。</p>
+        <p v-else-if="detail?.sources" class="lead">以下是 Crossref 返回的候选文献，检索命中不代表相关性或研究结论已核实。批准后会调用模型生成初稿并可能产生费用；至少选择一条有摘要的资料。系统使用已批准资料的可用摘要，摘要过长时会停止并提示处理。</p>
+      </header>
+      <p v-if="loading" class="muted" role="status">正在读取审核详情…</p>
+      <p v-if="error" class="problem" role="alert">{{ error }}</p>
+      <template v-if="detail">
+        <div class="selection-bar">
+          <p class="selection-hint">{{ detail.approval_type === 'task_approval' ? '请选择允许执行的任务。' : '请选择允许写作使用的资料。' }}</p>
+          <div class="selection"><button type="button" :disabled="locked || submitting" @click="selected = [...detail.item_ids]">全选</button><button type="button" :disabled="locked || submitting" @click="selected = []">取消选择</button><span class="count">已选 {{ selected.length }} / {{ detail.item_ids.length }}</span></div>
+        </div>
+        <ul class="items">
+          <li v-for="(id, index) in detail.item_ids" :key="id" :class="{ checked: selected.includes(id) }">
+            <label>
+              <input v-model="selected" type="checkbox" :value="id" :disabled="locked || submitting">
+              <span v-if="detail.items" class="item">
+                <strong class="item-title">{{ detail.items[index]?.title }}</strong>
+                <span class="item-desc">{{ detail.items[index]?.description }}</span>
+                <span class="item-output"><span class="k">预期产出：</span>{{ detail.items[index]?.expected_output }}</span>
+                <span class="item-id">{{ id }}</span>
+              </span>
+              <span v-else-if="detail.sources" class="item">
+                <strong class="item-title">{{ detail.sources[index]?.title }}</strong>
+                <span v-if="detail.sources[index]?.relevance_hint || (detail.sources[index]?.same_title_count ?? 1) > 1" class="flags">
+                  <span v-if="detail.sources[index]?.relevance_hint" class="flag">{{ relevanceText(detail.sources[index]?.relevance_hint) }}，请人工核验</span>
+                  <span v-if="(detail.sources[index]?.same_title_count ?? 1) > 1" class="flag warn">疑似同标题不同 DOI（{{ detail.sources[index]?.same_title_count }} 条），请核对版本</span>
+                </span>
+                <span class="meta">作者：{{ detail.sources[index]?.authors.join('、') || '暂无' }}；年份：<span class="num">{{ detail.sources[index]?.year || '暂无' }}</span>；期刊：{{ detail.sources[index]?.journal || '暂无' }}</span>
+                <span class="meta">DOI：<span class="doi">{{ detail.sources[index]?.doi }}</span></span>
+                <span class="abstract pa-prose"><span class="k">摘要：</span>{{ detail.sources[index]?.abstract || '暂无' }}</span>
+                <span class="meta">关联任务：{{ detail.sources[index]?.tasks.map(t => t.title).join('；') }}</span>
+                <a class="source-link" :href="detail.sources[index]?.url" target="_blank" rel="noopener noreferrer" @click.stop>查看文献来源</a>
+              </span>
+              <span v-else class="item item-id">{{ id }}</span>
+            </label>
+          </li>
+        </ul>
+        <p v-if="locked" class="warning">审核决定待确认，选择已锁定。请先核对服务端状态，可重试相同决定。</p>
+        <div class="actions">
+          <ElButton v-if="!locked" type="danger" plain :disabled="submitting || confirming" @click="reject">拒绝全部</ElButton>
+          <ElButton v-if="!locked" type="primary" :loading="submitting" :disabled="!validSelection || submitting || confirming || (!!detail.sources && !detail.sources.some(source => selected.includes(source.source_id) && !!source.abstract && source.abstract.trim().length >= 8))" @click="submit({ decision: 'approve', approved_ids: [...selected], ...(detail.items ? { continue_research: true } : detail.sources ? { continue_writing: true, segmented_writing: true } : {}) })">{{ detail.items ? '批准并启动资料检索' : detail.sources ? '批准并生成初稿' : '批准所选' }}</ElButton>
+          <ElButton v-if="locked && pending" type="primary" :loading="submitting" :disabled="submitting || (pending.decision === 'approve' && !pending.approved_ids.every(id => detail?.item_ids.includes(id)))" @click="submit(pending)">重试相同决定</ElButton>
+        </div>
+      </template>
+      <div v-else-if="!loading" class="actions"><ElButton @click="load">重新读取审核详情</ElButton><ElButton v-if="locked && pending" type="primary" :loading="submitting" :disabled="submitting" @click="submit(pending)">重试相同决定</ElButton></div>
+    </div>
   </section>
 </template>
 <style scoped>
-.approval { margin-top:18px; } h2 { margin:0; color:#263f4d; font-size:16px; } p { color:#657e8b; font-size:13px; line-height:1.6; } .selection { display:flex; align-items:center; gap:15px; flex-wrap:wrap; font-size:13px; color:#617b89; } .selection button { background:none; border:0; color:#246d8a; padding:5px 0; cursor:pointer; } .selection button:disabled { opacity:.5; cursor:not-allowed; } ul { list-style:none; padding:0; margin:12px 0 20px; display:grid; gap:8px; } li { border:1px solid #dce6ec; border-radius:8px; } label { display:flex; align-items:center; gap:10px; padding:12px; cursor:pointer; } label span { overflow-wrap:anywhere; color:#294a5b; font-size:13px; } input { accent-color:#246d8a; flex:none; } .problem { color:#9c4438; } .warning { color:#8c6a2d; } .actions { display:flex; flex-wrap:wrap; gap:8px; } .actions :deep(.el-button + .el-button) { margin-left:0; }
+/* ---------- 审批门控卡片 ---------- */
+.approval { position: relative; padding: 0; overflow: clip; border: 1px solid var(--pa-border-amber); border-radius: var(--pa-radius-card); background: var(--pa-bg-surface); box-shadow: var(--pa-ring-amber), var(--pa-shadow-card); }
+.approval.is-source { border-color: var(--el-color-primary-light-7); box-shadow: var(--pa-ring-primary), var(--pa-shadow-card); }
+.gate-bar { display: flex; align-items: center; gap: 8px; padding: 8px var(--pa-space-card); background: var(--pa-bg-amber); border-bottom: 1px solid var(--pa-border-amber); font-family: var(--pa-font-mono); font-size: 11px; letter-spacing: .08em; color: var(--pa-color-amber); }
+.is-source .gate-bar { background: var(--el-color-primary-light-9); border-bottom-color: var(--el-color-primary-light-8); color: var(--el-color-primary); }
+.gate-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: gate-breathe 1.8s ease-in-out infinite; }
+.gate-label { font-weight: 600; }
+.gate-meta { margin-left: auto; color: var(--pa-text-meta); letter-spacing: 0; font-variant-numeric: tabular-nums; }
+@keyframes gate-breathe { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+@media (prefers-reduced-motion: reduce) { .gate-dot { animation: none; } }
+
+.approval-body { padding: 20px var(--pa-space-card) 0; }
+.approval-head { margin-bottom: 16px; }
+h2 { margin: 0; color: var(--pa-color-heading); font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+.lead { margin: 6px 0 0; color: var(--pa-text-meta); font-size: 13px; line-height: 1.65; max-width: 72ch; }
+.muted { color: var(--pa-text-meta); font-size: 13px; }
+.problem { margin: 0 0 16px; padding: 10px 14px; border-radius: var(--pa-radius-control); color: var(--pa-color-danger); background: var(--pa-bg-danger); border: 1px solid var(--pa-border-danger); font-size: 13px; line-height: 1.6; }
+.warning { margin: 0 0 12px; padding: 10px 14px; border-radius: var(--pa-radius-control); color: var(--pa-color-amber); background: var(--pa-bg-amber); border-left: 3px solid var(--pa-color-amber-strong); font-size: 13px; line-height: 1.6; }
+
+/* ---------- 选择工具条 ---------- */
+.selection-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 8px 12px; background: var(--pa-bg-inset); border: var(--pa-border); border-radius: var(--pa-radius-control); }
+.selection-hint { margin: 0; color: var(--pa-text-body); font-size: 13px; }
+.selection { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; font-size: 13px; color: var(--pa-text-meta); }
+.selection button { background: none; border: 1px solid transparent; border-radius: var(--pa-radius-control); color: var(--el-color-primary); padding: 3px 8px; cursor: pointer; font: inherit; transition: background-color .15s; }
+.selection button:hover:not(:disabled) { background: var(--el-color-primary-light-9); }
+.selection button:disabled { opacity: .45; cursor: not-allowed; }
+.selection button:focus-visible { outline: none; box-shadow: var(--pa-ring-primary); }
+.count { margin-left: 6px; padding-left: 10px; border-left: var(--pa-border); font-family: var(--pa-font-mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+
+/* ---------- 审核对象列表 ---------- */
+.items { list-style: none; padding: 0; margin: 12px 0 16px; display: grid; gap: 8px; }
+.items li { border: var(--pa-border); border-radius: var(--pa-radius-card); background: var(--pa-bg-surface); transition: border-color .15s, background-color .15s, box-shadow .15s; }
+.items li:hover { border-color: var(--el-border-color-dark); }
+.items li.checked { border-color: var(--el-color-primary-light-5); background: var(--el-color-primary-light-9); box-shadow: inset 3px 0 0 var(--el-color-primary); }
+label { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; cursor: pointer; }
+input { flex: none; width: 16px; height: 16px; margin: 3px 0 0; accent-color: var(--el-color-primary); cursor: inherit; }
+input:disabled + .item { opacity: .75; }
+.item { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1; overflow-wrap: anywhere; color: var(--pa-text-body); font-size: 13px; line-height: 1.6; }
+.item-title { color: var(--pa-color-heading); font-size: 14px; font-weight: 600; line-height: 1.5; }
+.item-desc { color: var(--pa-text-body); }
+.item-output, .meta { color: var(--pa-text-meta); font-size: 12px; }
+.k { color: var(--pa-text-meta); }
+.item-id, .doi, .num { font-family: var(--pa-font-mono); font-variant-numeric: tabular-nums; }
+.item-id { color: var(--pa-text-faint); font-size: 11px; }
+.doi { color: var(--pa-text-body); }
+.flags { display: flex; flex-wrap: wrap; gap: 6px; }
+.flag { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 11px; line-height: 1.7; color: var(--pa-text-meta); background: var(--pa-bg-hover); border: var(--pa-border); }
+.flag.warn { color: var(--pa-color-amber); background: var(--pa-bg-amber); border-color: var(--pa-border-amber); }
+.abstract { display: block; margin: 2px 0; padding: 10px 14px; font-size: 13px; line-height: 1.7; color: var(--pa-text-body); background: var(--pa-bg-inset); border-left: 3px solid var(--el-color-primary-light-5); border-radius: 0 var(--pa-radius-control) var(--pa-radius-control) 0; max-width: 72ch; }
+.checked .abstract { background: var(--pa-bg-surface); }
+.source-link { align-self: flex-start; color: var(--el-color-primary); font-size: 12px; text-decoration: none; border-bottom: 1px solid var(--el-color-primary-light-7); }
+.source-link:hover { border-bottom-color: var(--el-color-primary); }
+
+/* ---------- 吸底决策区 ---------- */
+.actions { position: sticky; bottom: 0; z-index: 2; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin: 0 calc(-1 * var(--pa-space-card)); padding: 12px var(--pa-space-card); background: var(--pa-bg-surface); border-top: var(--pa-border); }
+.actions :deep(.el-button) { margin-left: 0; height: 34px; padding: 0 16px; border-radius: var(--pa-radius-control); font-weight: 500; }
+.actions :deep(.el-button--primary) { padding: 0 20px; box-shadow: 0 1px 2px rgba(37, 99, 235, .25); }
+.actions :deep(.el-button--primary:not(.is-disabled):hover) { box-shadow: 0 2px 8px rgba(37, 99, 235, .28); }
+.actions :deep(.el-button--danger.is-plain) { --el-button-bg-color: var(--pa-bg-surface); --el-button-border-color: var(--pa-border-danger); --el-button-text-color: var(--pa-color-danger); --el-button-hover-bg-color: var(--pa-bg-danger); --el-button-hover-border-color: var(--pa-color-danger-strong); --el-button-hover-text-color: var(--pa-color-danger); margin-right: auto; }
+.actions :deep(.el-button:focus-visible) { outline: none; box-shadow: var(--pa-ring-primary); }
+@media (max-width: 640px) { .approval-body { padding: 16px 16px 0; } .actions { margin: 0 -16px; padding: 12px 16px; } .gate-bar { padding: 8px 16px; } }
 </style>

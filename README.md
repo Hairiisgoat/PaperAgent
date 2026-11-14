@@ -1,5 +1,7 @@
 # PaperAgent
 
+[English](README.en.md) | 简体中文
+
 **面向本地研究流程的 AI 论文规划、写作与审查助手。**
 
 PaperAgent 将论文项目管理、任务规划、学术资料检索、人工审核、分段写作与质量审查组织在同一工作台。它帮助使用者从研究主题出发形成可追溯的论文初稿，并保留修改版本、引用依据和工作流运行记录。
@@ -110,11 +112,11 @@ PaperAgent/
 ### 1. 获取代码
 
 ```powershell
-git clone "https://github.com/<你的GitHub账号>/PaperAgent.git"
+git clone "https://github.com/Hairiisgoat/PaperAgent.git"
 cd PaperAgent
 ```
 
-私有仓库需要当前账号拥有访问权限。以下命令以仓库根目录为起点。
+以下命令以仓库根目录为起点。
 
 ### 2. 安装后端依赖
 
